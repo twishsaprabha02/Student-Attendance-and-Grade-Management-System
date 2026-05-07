@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login Page</title>
+
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(to right, #dfe9f3, #ffffff);
+    }
+
+    .container {
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .login-box {
+        width: 350px;
+        background: #f9f9f9;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .login-box h3 {
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    .input-group label {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .input-box {
+        position: relative;
+    }
+
+    .input-box i {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        color: #888;
+    }
+
+    .input-box input {
+        width: 100%;
+        padding: 10px 10px 10px 35px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+
+    .input-box input:focus {
+        border-color: #4a90e2;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 10px;
+        background: #4a90e2;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .btn:hover {
+        background: #357bd8;
+    }
+
+    .options {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+    }
+
+    .options a {
+        text-decoration: none;
+        color: #4a90e2;
+    }
+
+    .options a:hover {
+        text-decoration: underline;
+    }
+
+    .back-home {
+        margin-top: 15px;
+        font-size: 13px;
+    }
+
+    .back-home a {
+        text-decoration: none;
+        color: #333;
+    }
+
+    .back-home a:hover {
+        text-decoration: underline;
+    }
+
+    /* ── Loader styles ── */
+    .btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.2s, opacity 0.2s;
+    }
+
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.85;
+    }
+
+    .btn-text { transition: opacity 0.2s; }
+
+    .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.35);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        flex-shrink: 0;
+    }
+
+    .btn.loading .spinner { display: block; }
+    .btn.loading .btn-text { opacity: 0.7; }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* success flash */
+    .btn.success { background: #27ae60 !important; }
+    .btn.error   { background: #e74c3c !important; }
+
+    /* overlay loader (full screen) */
+    #pageLoader {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.75);
+        z-index: 9999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+    }
+    #pageLoader.show { display: flex; }
+
+    .page-spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid #dfe9f3;
+        border-top-color: #4a90e2;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    #pageLoader p {
+        color: #4a90e2;
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+
+</style>
+</head>
+<body>
+
+
+<div id="pageLoader">
+    <div class="page-spinner"></div>
+    <p>Logging you in...</p>
+</div>
+
+<div class="container">
+    <h2>Student Attendance & Grade Tracker</h2>
+
+    <div class="login-box">
+        <h3>Login</h3>
+
+        <div class="input-group">
+            <label>Username / Email</label>
+            <div class="input-box">
+                <i class="fa fa-user"></i>
+                <input id="username" type="text" placeholder="Username / Email">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <div class="input-box">
+                <i class="fa fa-lock"></i>
+                <input id="password" type="password" placeholder="Password">
+            </div>
+        </div>
+
+        <button class="btn" id="loginBtn">
+            <div class="spinner"></div>
+            <span class="btn-text">Login</span>
+        </button>
+
+        <div class="options">
+        <div class="demo-login">
+             <p><strong>Demo Login</strong></p>
+             <p>Username: teacher</p>
+             <p>Password: 1234</p>
+         </div>
+            <label><input type="checkbox"> Remember me</label>
+            <a href="#">Forgot Password?</a>
+        </div>
+    </div>
+
+    <div class="back-home">
+    <a href="landing.html">← Back to Home</a>
+    </div>
+</div>
+<script>
+(function () {
+    var btn = document.getElementById("loginBtn");
+    var btnText = btn.querySelector(".btn-text");
+    var pageLoader = document.getElementById("pageLoader");
+
+    function setLoading(on) {
+        btn.disabled = on;
+        if (on) {
+            btn.classList.add("loading");
+            btnText.textContent = "Logging in...";
+        } else {
+            btn.classList.remove("loading");
+            btnText.textContent = "Login";
+        }
+    }
+
+    function flashBtn(type) {
+        btn.classList.add(type);
+        setTimeout(function () { btn.classList.remove(type); }, 1200);
+    }
+
+    btn.addEventListener("click", async function () {
+        var username = document.getElementById("username").value.trim();
+        var password = document.getElementById("password").value;
+
+        if (!username || !password) {
+            flashBtn("error");
+            btnText.textContent = "Fill in all fields";
+            setTimeout(function () { btnText.textContent = "Login"; }, 1200);
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            var res = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: username, password: password })
+            });
+
+            var result = await res.json();
+
+            if (result.success) {
+                // show success state then full-page loader
+                btn.classList.remove("loading");
+                btn.classList.add("success");
+                btnText.textContent = "✓ Success!";
+                btn.disabled = true;
+
+                setTimeout(function () {
+                    pageLoader.classList.add("show");
+                    localStorage.setItem("user", username);
+                    setTimeout(function () {
+                        window.location.href = "Home.html";
+                    }, 800);
+                }, 600);
+
+            } else {
+                setLoading(false);
+                flashBtn("error");
+                btnText.textContent = result.message || "Invalid credentials";
+                setTimeout(function () { btnText.textContent = "Login"; }, 1800);
+            }
+
+        } catch (err) {
+            console.error(err);
+            setLoading(false);
+            flashBtn("error");
+            btnText.textContent = "Server error — try again";
+            setTimeout(function () { btnText.textContent = "Login"; }, 2000);
+        }
+    });
+})();
+</script>
+</body>
+</html>

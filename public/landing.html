@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Tracker</title>
+
+    <style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+}
+
+/* Navbar */
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#2f5bea;
+    padding:15px 40px;
+    color:white;
+}
+
+/* Bigger Navbar Title */
+header h1.logo{
+    font-size:50px;
+    font-weight:bold;
+    color:white;
+    margin:0;
+    line-height:1;
+}
+
+nav a{
+    margin:0 15px;
+    text-decoration:none;
+    color:white;
+    font-size:14px;
+    cursor:pointer;
+    transition: opacity 0.2s;
+}
+nav a:hover { opacity: 0.8; }
+
+.login-btn{
+    background:white;
+    color:#2f5bea;
+    border:none;
+    padding:7px 15px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+/* Hero Section */
+.hero{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:30px 40px;
+}
+
+.hero-text{ max-width:50%; }
+
+.hero-text h1{
+    font-size:32px;
+    margin-bottom:20px;
+    color:#222;
+}
+
+.hero-text p{
+    margin-bottom:25px;
+    color:#555;
+}
+
+.primary-btn{
+    background:#2f5bea;
+    color:white;
+    padding:10px 20px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.hero-image{
+    width:600px;
+    height:250px;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#999;
+}
+
+/* Features */
+.features{
+    display:flex;
+    justify-content:space-around;
+    padding:40px;
+    flex-wrap:wrap;
+    gap:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    width:260px;
+    text-align:center;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+.card h3{ margin-bottom:10px; }
+.card p{ color:#555; font-size:14px; }
+
+/* About */
+.about{ text-align:center; padding:60px; }
+.about h2{ margin-bottom:40px; }
+.about p{ color:#555; max-width:600px; margin:auto; }
+
+/* Footer */
+footer{
+    text-align:center;
+    padding:15px;
+    background:#eee;
+    font-size:13px;
+}
+
+.hero-image{ width:600px; height:auto; padding:10px; }
+.hero-image img{
+    width:100%;
+    height:auto;
+    max-height:350px;
+    object-fit:contain;
+    display:block;
+    border-radius:10px;
+}
+
+/* Responsive */
+@media(max-width:768px){
+    header{ flex-direction:column; gap:15px; }
+    header h1.logo{ font-size:50px; }
+    nav{ display:flex; flex-wrap:wrap; justify-content:center; }
+    .hero{ flex-direction:column; text-align:center; }
+    .hero-text{ max-width:100%; margin-bottom:50px; }
+    .hero-image{ width:500px; }
+    .hero-image img{ width:100%; height:auto; max-height:350px; display:block; border-radius:10px; }
+}
+
+/* ── Modal overlay ── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+.modal-overlay.open { display: flex; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+.modal-box {
+    background: white;
+    border-radius: 16px;
+    padding: 36px;
+    max-width: 560px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUp {
+    from { transform: translateY(40px); opacity:0; }
+    to   { transform: translateY(0);    opacity:1; }
+}
+
+.modal-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+    background: none;
+    border: none;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.modal-close:hover { color: #222; }
+
+.modal-box h2 {
+    font-size: 22px;
+    color: #2f5bea;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Feature grid */
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.feature-item {
+    background: #f0f4ff;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.feature-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(47,91,234,0.15);
+}
+.feature-icon {
+    font-size: 26px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.feature-item h4 { font-size: 14px; color: #222; margin-bottom: 4px; }
+.feature-item p  { font-size: 12px; color: #666; }
+
+/* About modal */
+.about-content { display: flex; flex-direction: column; gap: 16px; }
+.about-stat-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.about-stat {
+    background: #f0f4ff;
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    flex: 1;
+}
+.about-stat .num { font-size: 28px; font-weight: bold; color: #2f5bea; }
+.about-stat .lbl { font-size: 12px; color: #666; margin-top: 2px; }
+.about-desc { color: #555; font-size: 14px; line-height: 1.7; text-align: center; }
+.about-team {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    color: #444;
+}
+.about-team strong { color: #2f5bea; }
+</style>
+</head>
+
+
+<body>
+
+<!-- Navbar -->
+<header>
+    <h1 class="logo">Student Tracker</h1>
+
+    <nav>
+        <a href="#" onclick="goHome()">Home</a>
+        <a href="#" onclick="openModal('featuresModal')">Features</a>
+        <a href="#" onclick="openModal('aboutModal')">About</a>
+    </nav>
+</header>
+
+<!-- ── Features Modal ── -->
+<div class="modal-overlay" id="featuresModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('featuresModal')">✕</button>
+        <h2>✨ Features</h2>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <div class="feature-icon">🎓</div>
+                <div>
+                    <h4>Add Students</h4>
+                    <p>Easily register new students with name, roll number and class.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📅</div>
+                <div>
+                    <h4>Track Attendance</h4>
+                    <p>Mark daily attendance as Present or Absent for every student.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <div>
+                    <h4>Attendance Dashboard</h4>
+                    <p>View attendance percentage and history for each student.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📝</div>
+                <div>
+                    <h4>Track Grades</h4>
+                    <p>Record subject-wise marks for Unit Tests, Mid Terms and Finals.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🏅</div>
+                <div>
+                    <h4>Auto Grading</h4>
+                    <p>Automatically calculates percentage and assigns A, B, or C grade.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">👤</div>
+                <div>
+                    <h4>Manage Students</h4>
+                    <p>Edit or delete student records anytime from the Reports page.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📋</div>
+                <div>
+                    <h4>Report Cards</h4>
+                    <p>View full report cards with attendance, grades and exam history.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🖼️</div>
+                <div>
+                    <h4>Profile Photos</h4>
+                    <p>Upload and display student profile photos on report cards.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── About Modal ── -->
+<div class="modal-overlay" id="aboutModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('aboutModal')">✕</button>
+        <h2>ℹ️ About This App</h2>
+        <div class="about-content">
+            <p class="about-desc">
+                <strong>Student Attendance & Grade Tracker</strong> is a web-based system built to help teachers
+                efficiently manage student records, track daily attendance, and monitor academic performance —
+                all in one place.
+            </p>
+            <div class="about-stat-row">
+                <div class="about-stat">
+                    <div class="num">5+</div>
+                    <div class="lbl">Pages</div>
+                </div>
+                <div class="about-stat">
+                    <div class="num">8+</div>
+                    <div class="lbl">Features</div>
+                </div>
+                <div class="about-stat">
+                    <div class="num">100%</div>
+                    <div class="lbl">Free to Use</div>
+                </div>
+            </div>
+            <p class="about-desc">
+                Designed to reduce manual workload and paperwork for teachers. Data is stored securely
+                and can be accessed anytime. Built with HTML, CSS, JavaScript and a Node.js backend.
+            </p>
+            <div class="about-team">
+                👨‍💻 Developed by <strong>Group 131</strong> &nbsp;|&nbsp; © 2026 Student Tracker
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-text">
+        <h1>Student Attendance & Grade Tracker System</h1>
+        <p>An integrated platform that facilitates accurate tracking of student attendance and academic progress.
+          It enhances administrative efficiency, reduces manual workload, 
+          and ensures reliable data management in educational environments.</p>
+        <a href="login.html" class="primary-btn">Login</a>
+        
+    </div>
+
+    <div class="hero-image">
+    <img src="dashboard.jpeg" alt="Dashboard Preview">
+    </div>
+</section>
+
+
+<!-- About -->
+<section class="about">
+    <h2>About Us</h2>
+    <p>
+        The Student Attendance and Grade Tracker System is a web application that helps teachers
+        manage student records, track attendance, and store academic data efficiently.
+        It simplifies record keeping and improves organization.
+    </p>
+</section>
+
+<!-- Footer -->
+<footer>
+    © 2026 Student Attendance & Grade Tracker | Developed by Twisha and Team
+</footer>
+
+<script>
+function goHome() {
+    if (localStorage.getItem("user")) {
+        window.location.href = "Home.html";
+    } else {
+        window.location.href = "login.html";
+    }
+}
+function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+}
+// close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(this.id);
+    });
+});
+// close on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(function(m) {
+            closeModal(m.id);
+        });
+    }
+});
+</script>
+</body>
+</html>
+

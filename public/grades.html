@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grades</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="nav.js" defer></script>
+</head>
+
+<body class="Grades">
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="https://indzara.com/wp-content/uploads/2015/06/School-Attendance-Register.jpg" alt="logo"
+                    height="50px">
+                <h2>Student Tracker</h2>
+            </div>
+            <ul>
+                <li><a href="Home.html">Home</a></li>
+                <li><a href="student.html">Add Student</a></li>
+                <li><a href="attendance.html">Attendance</a></li>
+                <li><a href="grades.html">Grades</a></li>
+                <li><a href="reports.html">Reports</a></li>
+            </ul>
+
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <h2>Grades</h2>
+            <form>
+                <h3>Select Exam</h3>
+                <select id="exam">
+                  <option>Unit Test 1</option>
+                  <option>Unit Test 2</option>
+                  <option>Mid Term</option>
+                  <option>Final Exam</option>
+                </select>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Total</th>
+                            <th>%</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                     <tbody id="gradeTable">
+                         <!-- Students will load here -->
+                     </tbody>
+        
+                </table>
+                <button type="submit">Add Grades</button>
+            </form>
+
+        </div>
+    </main>
+    <footer>
+
+    </footer>
+    
+    <script>
+
+        if (!localStorage.getItem("user")) {
+        window.location.href = "login.html";
+    }
+async function loadStudents() {
+    const res = await fetch("http://localhost:5000/api/students");
+    const students = await res.json();
+
+    let html = "";
+
+    students.forEach(s => {
+        html += `
+        <tr>
+              <td>${s.rollNo}</td>
+              <td>${s.name}</td>
+
+    <td>
+        <div class="subjects">
+            <div class="row">
+                <input type="text" placeholder="Subject" class="subject">
+                <input type="number" placeholder="Marks" class="marks" oninput="calculateRow(this)">
+            </div>
+        </div>
+        <button type="button" onclick="addSubject(this)">+ Add Subject</button>
+    </td>
+
+    <td class="total">0</td>
+    <td class="percentage">0%</td>
+    <td class="grade">-</td>
+        </tr>
+        `;
+    });
+
+    document.getElementById("gradeTable").innerHTML = html;
+}
+
+document.querySelector("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const exam = document.getElementById("exam").value;
+    const rows = document.querySelectorAll("#gradeTable tr");
+
+    let gradesData = [];
+
+    rows.forEach(row => {
+        const name = row.children[1].innerText;
+        const rollNo = row.children[0].innerText;
+
+        const subjects = row.querySelectorAll(".subject");
+        const marks = row.querySelectorAll(".marks");
+
+        for (let i = 0; i < subjects.length; i++) {
+            const subject = subjects[i].value;
+            const mark = marks[i].value;
+
+            if (subject && mark) {
+                gradesData.push({
+                    rollNo,
+                    subject,
+                    marks: mark,
+                    exam
+                });
+            }
+        }
+    });
+
+    await fetch("http://localhost:5000/api/grades", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(gradesData)
+    });
+
+    alert("Grades saved for exam: " + exam);
+});
+
+// load students on page load
+loadStudents();
+function addSubject(btn) {
+    const container = btn.previousElementSibling;
+
+    const newRow = document.createElement("div");
+    newRow.className = "row";
+
+    newRow.innerHTML = `
+        <input type="text" placeholder="Subject" class="subject">
+        <input type="number" placeholder="Marks" class="marks" oninput="calculateRow(this)">
+    `;
+
+    container.appendChild(newRow);
+}
+function calculateRow(input) {
+    const row = input.closest("tr");
+
+    const marksInputs = row.querySelectorAll(".marks");
+
+    let total = 0;
+    let count = 0;
+
+    marksInputs.forEach(m => {
+        if (m.value) {
+            total += Number(m.value);
+            count++;
+        }
+    });
+
+    let percentage = count ? (total / count) : 0;
+
+    let grade = "C";
+    if (percentage >= 80) grade = "A";
+    else if (percentage >= 60) grade = "B";
+
+    row.querySelector(".total").innerText = total;
+    row.querySelector(".percentage").innerText = percentage.toFixed(1) + "%";
+    row.querySelector(".grade").innerText = grade;
+}
+
+async function loadGrades() {
+
+    const res = await fetch("http://localhost:5000/api/grades");
+    const grades = await res.json();
+
+    const rows = document.querySelectorAll("#gradeTable tr");
+
+    rows.forEach(row => {
+
+        const rollNo = row.children[0].innerText;
+
+        const studentGrades = grades.filter(
+            g => g.rollNo === rollNo
+        );
+
+        if (studentGrades.length > 0) {
+
+            const subjectsContainer = row.querySelector(".subjects");
+
+            subjectsContainer.innerHTML = "";
+
+            studentGrades.forEach(g => {
+
+                const div = document.createElement("div");
+                div.className = "row";
+
+                div.innerHTML = `
+                    <input type="text" class="subject" value="${g.subject}">
+                    <input type="number" class="marks" value="${g.marks}" oninput="calculateRow(this)">
+                `;
+
+                subjectsContainer.appendChild(div);
+            });
+
+            calculateRow(
+                row.querySelector(".marks")
+            );
+        }
+    });
+}
+
+
+
+window.onload = async function () {
+    await loadStudents();
+    loadGrades();
+};
+</script>
+
+</body>
+</html>

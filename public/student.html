@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add-Students</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="nav.js" defer></script>
+</head>
+
+<body class="Student">
+    <header>
+        <nav>
+            <div class="logo">
+                 <img src="https://indzara.com/wp-content/uploads/2015/06/School-Attendance-Register.jpg" alt="logo" height="50px">
+                <h2>Student Tracker</h2>
+            </div>
+            <ul>
+                <li><a href="Home.html">Home</a></li>
+                <li><a href="student.html">Add Student</a></li>
+                <li><a href="attendance.html">Attendance</a></li>
+                <li><a href="grades.html">Grades</a></li>
+                <li><a href="reports.html">Reports</a></li>
+            </ul>
+
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <h2>Add Student</h2>
+            <form>
+                <div>
+    <label for="name">Name:</label><br>
+    <input id="name" type="text" placeholder="Enter name" required><br><br>
+</div>
+
+<div>
+    <label for="rollNo">Roll No:</label><br>
+    <input id="rollNo" type="text" placeholder="Enter roll no" required><br><br>
+</div>
+
+<div>
+    <label for="className">Class:</label><br>
+    <input id="className" type="text" placeholder="Enter class" required><br><br>
+</div>
+
+                <button type="Submit">Add </button>
+            </form>
+        </div>
+    </main>
+    <footer>
+
+    </footer>
+    <script>
+document.querySelector("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+        name: document.getElementById("name").value,
+        rollNo: document.getElementById("rollNo").value,
+        className: document.getElementById("className").value
+    };
+
+    try {
+        const res = await fetch("http://localhost:5000/api/students", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        alert(result.message);
+    } catch (err) {
+        console.error(err);
+        alert("Error connecting to server");
+    }
+});
+</script>
+</body>  
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="nav.js" defer></script>
+    <style>
+        .presentBtn, .absentBtn {
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .presentBtn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(54,229,54,0.5);
+            background-color: rgb(30, 200, 30) !important;
+        }
+        .absentBtn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(241,50,50,0.5);
+            background-color: rgb(210, 30, 30) !important;
+        }
+        .presentBtn:disabled, .absentBtn:disabled {
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .presentBtn:active:not(:disabled) { transform: scale(0.97); }
+        .absentBtn:active:not(:disabled)  { transform: scale(0.97); }
+    </style>
+</head>
+
+<body class="Attendance">
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="https://indzara.com/wp-content/uploads/2015/06/School-Attendance-Register.jpg" alt="logo"
+                    height="50px">
+                <h2>Student Tracker </h2>
+            </div>
+            <ul>
+                <li><a href="Home.html">Home</a></li>
+                <li><a href="student.html">Add Student</a></li>
+                <li><a href="attendance.html">Attendance</a></li>
+                <li><a href="grades.html">Grades</a></li>
+                <li><a href="reports.html">Reports</a></li>
+            </ul>
+
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <h2>Attendance</h2>
+            <div style="margin-bottom: 15px;">
+            <label>Select Date:</label>
+            <input type="date" id="date">
+        </div>
+
+        
+<table border="1">
+    <thead>
+        <tr>
+            <th style="color:black;">Name</th>
+            <th style="color:black;">Roll No</th>
+            <th style="color:black;">Status</th>
+        </tr>
+    </thead>
+   <tbody id="studentTable"></tbody>
+</table>
+
+<!-- ATTENDANCE HISTORY -->
+<h3>Attendance History</h3>
+
+<input type="date" id="filterDate">
+<button onclick="filterAttendance()">Filter</button>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Roll No</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody id="historyTable"></tbody>
+</table>
+
+ <h3>Attendance Dashboard</h3>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Total Days</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody id="dashboardTable"></tbody>
+</table>
+            
+        </div>
+    </main>
+    <footer>
+
+    </footer>
+    <script>
+
+        if (!localStorage.getItem("user")) {
+       window.location.href = "login.html";
+    }
+async function markAttendance(rollNo, status) {
+    const date = document.getElementById("date").value;
+
+    if (!date) {
+        alert("Please select date");
+        return;
+    }
+
+    await fetch("http://localhost:5000/api/attendance", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ rollNo, status, date })
+    });
+
+    alert("Attendance saved");
+
+    loadStudents();     // refresh buttons
+    loadAttendance();   // update history
+}
+
+async function loadStudents() {
+    
+    console.log("loadStudents running");
+
+    const studentsRes = await fetch("http://localhost:5000/api/students");
+    const students = await studentsRes.json();
+    
+
+    const res2 = await fetch("http://localhost:5000/api/attendance");
+    const attendance = await res2.json();
+
+    const selectedDate = document.getElementById("date").value || null;
+
+    let html = "";
+
+    students.forEach(s => {
+
+        // check if this student already marked
+        const alreadyMarked = selectedDate
+    ? attendance.some(a => a.rollNo === s.rollNo && a.date === selectedDate)
+    : false;
+
+       html += `
+<tr>
+    <td>${s.name}</td>
+    <td>${s.rollNo}</td>
+    <td>
+        <button 
+            class="presentBtn"
+            ${alreadyMarked ? "disabled" : ""}
+            style="opacity:${alreadyMarked ? "0.5" : "1"}"
+            onclick="markAttendance('${s.rollNo}', 'Present')">
+            Present
+        </button>
+
+        <button 
+            class="absentBtn"
+            ${alreadyMarked ? "disabled" : ""}
+            style="opacity:${alreadyMarked ? "0.5" : "1"}"
+            onclick="markAttendance('${s.rollNo}', 'Absent')">
+            Absent
+        </button>
+    </td>
+</tr>
+`;
+    });
+
+    document.getElementById("studentTable").innerHTML = html;
+}
+async function loadAttendance() {
+
+    const studentsRes = await fetch("http://localhost:5000/api/students");
+    const students = await studentsRes.json();
+
+    const res = await fetch("http://localhost:5000/api/attendance");
+    const data = await res.json();
+
+    let html = "";
+
+    data.forEach(a => {
+
+        const student = students.find(
+            s =>
+            String(s.rollNo).trim() ===
+            String(a.rollNo).trim()
+        );
+
+        html += `
+        <tr>
+            <td>${student?.name || "Unknown"}</td>
+            <td>${a.rollNo}</td>
+            <td>${a.status}</td>
+            <td>${a.date}</td>
+        </tr>
+        `;
+    });
+
+    document.getElementById("historyTable").innerHTML = html;
+}
+async function filterAttendance() {
+
+    const selectedDate = document.getElementById("filterDate").value;
+
+    const studentsRes = await fetch("http://localhost:5000/api/students");
+    const students = await studentsRes.json();
+
+    const res = await fetch("http://localhost:5000/api/attendance");
+    const data = await res.json();
+
+    let html = "";
+
+    data.forEach(a => {
+
+        if (!selectedDate || a.date === selectedDate) {
+
+            const student = students.find(
+                s =>
+                String(s.rollNo).trim() ===
+                String(a.rollNo).trim()
+            );
+
+            html += `
+            <tr>
+                <td>${student?.name || "Unknown"}</td>
+                <td>${a.rollNo}</td>
+                <td>${a.status}</td>
+                <td>${a.date}</td>
+            </tr>
+            `;
+        }
+    });
+
+    document.getElementById("historyTable").innerHTML = html;
+}
+
+window.onload = function () {
+    loadStudents();
+    loadAttendance();
+    loadDashboard();
+
+    document.getElementById("date").addEventListener("change", function () {
+        loadStudents(); // 🔥 this is enough
+    });
+};
+async function loadDashboard() {
+
+    const studentsRes = await fetch("http://localhost:5000/api/students");
+    const students = await studentsRes.json();
+
+    const res = await fetch("http://localhost:5000/api/attendance");
+    const data = await res.json();
+
+    const studentsMap = {};
+
+    data.forEach(a => {
+
+        if (!studentsMap[a.rollNo]) {
+
+            const student = students.find(
+                s =>
+                String(s.rollNo).trim() ===
+                String(a.rollNo).trim()
+            );
+
+            studentsMap[a.rollNo] = {
+                name: student?.name || "Unknown",
+                total: 0,
+                present: 0,
+                absent: 0
+            };
+        }
+
+        studentsMap[a.rollNo].total++;
+
+        if (a.status === "Present") {
+            studentsMap[a.rollNo].present++;
+        } else {
+            studentsMap[a.rollNo].absent++;
+        }
+    });
+
+    let html = "";
+
+    Object.values(studentsMap).forEach(s => {
+
+        const percentage =
+            s.total
+            ? ((s.present / s.total) * 100).toFixed(1)
+            : 0;
+
+        html += `
+        <tr>
+            <td>${s.name}</td>
+            <td>${s.total}</td>
+            <td>${s.present}</td>
+            <td>${s.absent}</td>
+            <td>${percentage}%</td>
+        </tr>
+        `;
+    });
+
+    document.getElementById("dashboardTable").innerHTML = html;
+}
+</script>
+</body>
+
+</html>
