@@ -6,31 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance</title>
     <link rel="stylesheet" href="style.css">
-    <script src="nav.js" defer></script>
-    <style>
-        .presentBtn, .absentBtn {
-            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        .presentBtn:hover:not(:disabled) {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(54,229,54,0.5);
-            background-color: rgb(30, 200, 30) !important;
-        }
-        .absentBtn:hover:not(:disabled) {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(241,50,50,0.5);
-            background-color: rgb(210, 30, 30) !important;
-        }
-        .presentBtn:disabled, .absentBtn:disabled {
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        .presentBtn:active:not(:disabled) { transform: scale(0.97); }
-        .absentBtn:active:not(:disabled)  { transform: scale(0.97); }
-    </style>
 </head>
 
 <body class="Attendance">
@@ -195,19 +170,18 @@ async function loadAttendance() {
     const res = await fetch("http://localhost:5000/api/attendance");
     const data = await res.json();
 
+    const validRollNos = new Set(students.map(s => String(s.rollNo).trim()));
+
     let html = "";
 
     data.forEach(a => {
+        if (!validRollNos.has(String(a.rollNo).trim())) return;
 
-        const student = students.find(
-            s =>
-            String(s.rollNo).trim() ===
-            String(a.rollNo).trim()
-        );
+        const student = students.find(s => String(s.rollNo).trim() === String(a.rollNo).trim());
 
         html += `
         <tr>
-            <td>${student?.name || "Unknown"}</td>
+            <td>${student ? student.name : ""}</td>
             <td>${a.rollNo}</td>
             <td>${a.status}</td>
             <td>${a.date}</td>
@@ -215,7 +189,7 @@ async function loadAttendance() {
         `;
     });
 
-    document.getElementById("historyTable").innerHTML = html;
+    document.getElementById("historyTable").innerHTML = html || "<tr><td colspan='4' style='text-align:center'>No attendance records found</td></tr>";
 }
 async function filterAttendance() {
 
@@ -227,30 +201,27 @@ async function filterAttendance() {
     const res = await fetch("http://localhost:5000/api/attendance");
     const data = await res.json();
 
+    const validRollNos = new Set(students.map(s => String(s.rollNo).trim()));
+
     let html = "";
 
     data.forEach(a => {
+        if (!validRollNos.has(String(a.rollNo).trim())) return;
+        if (selectedDate && a.date !== selectedDate) return;
 
-        if (!selectedDate || a.date === selectedDate) {
+        const student = students.find(s => String(s.rollNo).trim() === String(a.rollNo).trim());
 
-            const student = students.find(
-                s =>
-                String(s.rollNo).trim() ===
-                String(a.rollNo).trim()
-            );
-
-            html += `
-            <tr>
-                <td>${student?.name || "Unknown"}</td>
-                <td>${a.rollNo}</td>
-                <td>${a.status}</td>
-                <td>${a.date}</td>
-            </tr>
-            `;
-        }
+        html += `
+        <tr>
+            <td>${student ? student.name : ""}</td>
+            <td>${a.rollNo}</td>
+            <td>${a.status}</td>
+            <td>${a.date}</td>
+        </tr>
+        `;
     });
 
-    document.getElementById("historyTable").innerHTML = html;
+    document.getElementById("historyTable").innerHTML = html || "<tr><td colspan='4' style='text-align:center'>No records found</td></tr>";
 }
 
 window.onload = function () {
@@ -270,44 +241,27 @@ async function loadDashboard() {
     const res = await fetch("http://localhost:5000/api/attendance");
     const data = await res.json();
 
+    const validRollNos = new Set(students.map(s => String(s.rollNo).trim()));
     const studentsMap = {};
 
     data.forEach(a => {
+        if (!validRollNos.has(String(a.rollNo).trim())) return;
 
         if (!studentsMap[a.rollNo]) {
-
-            const student = students.find(
-                s =>
-                String(s.rollNo).trim() ===
-                String(a.rollNo).trim()
-            );
-
-            studentsMap[a.rollNo] = {
-                name: student?.name || "Unknown",
-                total: 0,
-                present: 0,
-                absent: 0
-            };
+            const student = students.find(s => String(s.rollNo).trim() === String(a.rollNo).trim());
+            studentsMap[a.rollNo] = { name: student ? student.name : null, total: 0, present: 0, absent: 0 };
         }
 
         studentsMap[a.rollNo].total++;
-
-        if (a.status === "Present") {
-            studentsMap[a.rollNo].present++;
-        } else {
-            studentsMap[a.rollNo].absent++;
-        }
+        if (a.status === "Present") studentsMap[a.rollNo].present++;
+        else studentsMap[a.rollNo].absent++;
     });
 
     let html = "";
 
     Object.values(studentsMap).forEach(s => {
-
-        const percentage =
-            s.total
-            ? ((s.present / s.total) * 100).toFixed(1)
-            : 0;
-
+        if (!s.name) return;
+        const percentage = s.total ? ((s.present / s.total) * 100).toFixed(1) : 0;
         html += `
         <tr>
             <td>${s.name}</td>
@@ -319,7 +273,7 @@ async function loadDashboard() {
         `;
     });
 
-    document.getElementById("dashboardTable").innerHTML = html;
+    document.getElementById("dashboardTable").innerHTML = html || "<tr><td colspan='5' style='text-align:center'>No data available</td></tr>";
 }
 </script>
 </body>

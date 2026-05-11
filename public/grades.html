@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grades</title>
     <link rel="stylesheet" href="style.css">
-    <script src="nav.js" defer></script>
 </head>
 
 <body class="Grades">
@@ -111,32 +110,30 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     let gradesData = [];
 
     rows.forEach(row => {
-        const name = row.children[1].innerText;
         const rollNo = row.children[0].innerText;
-
         const subjects = row.querySelectorAll(".subject");
         const marks = row.querySelectorAll(".marks");
 
         for (let i = 0; i < subjects.length; i++) {
             const subject = subjects[i].value;
             const mark = marks[i].value;
-
             if (subject && mark) {
-                gradesData.push({
-                    rollNo,
-                    subject,
-                    marks: mark,
-                    exam
-                });
+                gradesData.push({ rollNo, subject, marks: mark, exam });
             }
         }
     });
 
+    // First DELETE existing grades for this exam to prevent duplicates
+    try {
+        await fetch(`http://localhost:5000/api/grades/exam/${encodeURIComponent(exam)}`, {
+            method: "DELETE"
+        });
+    } catch(e) {}
+
+    // Then save fresh grades
     await fetch("http://localhost:5000/api/grades", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(gradesData)
     });
 
